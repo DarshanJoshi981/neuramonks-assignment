@@ -13,7 +13,7 @@ This is a Streamlit web application for performing advanced question answering u
 
 ### Prerequisites
 
-- Python 3.6+
+- Python 3.9+
 - pip package manager
 
 ### Installation
