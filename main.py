@@ -109,8 +109,7 @@ def create_retrieval_chain(vector_store, prompt_template):
 
 def generate_response(chain, input_question):
     answer = chain({"query": input_question})
-    final_answer = re.sub(r'\s+', ' ', answer['result'])
-    return final_answer
+    return answer['result'].strip()
 
 
 # Display conversation history using Streamlit messages
