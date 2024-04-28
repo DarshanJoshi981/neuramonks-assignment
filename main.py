@@ -1,24 +1,21 @@
 import re
 import sys
-
-from dotenv import load_dotenv
-load_dotenv()
-
 import pickle
-from dotenv import load_dotenv
 import streamlit as st
 from streamlit_chat import message
 import os
 import pandas as pd
+
 from langchain.prompts import PromptTemplate
 from langchain.chains import RetrievalQA
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_community.vectorstores import FAISS
 from langchain.docstore.document import Document
-from langchain.embeddings import HuggingFaceBgeEmbeddings
+from langchain.embeddings import HuggingFaceInstructEmbeddings
 from langchain_community.llms import HuggingFaceHub
 
+from dotenv import load_dotenv
 load_dotenv()
 
 llm_model = HuggingFaceHub(repo_id="HuggingFaceH4/zephyr-7b-beta", model_kwargs={"temperature": 0.5, "max_new_tokens": 1000})
@@ -68,9 +65,6 @@ def create_vector_store(file_path, file_type):
     elif file_type == 'csv':
         raw_text = read_csv_to_text(file_path)
 
-        with open('customers.txt', 'w') as file:
-            file.write(raw_text)
-
     text_splitter = RecursiveCharacterTextSplitter(
         chunk_size=10000, chunk_overlap=0
     )
@@ -79,7 +73,7 @@ def create_vector_store(file_path, file_type):
     docs = [Document(page_content=t) for t in texts]
     vectorstore_faiss = FAISS.from_documents(
         documents=docs,
-        embedding=HuggingFaceBgeEmbeddings(model_name="BAAI/bge-large-en-v1.5"),
+        embedding=HuggingFaceInstructEmbeddings(model_name="hkunlp/instructor-base"),
     )
     return vectorstore_faiss
 
@@ -117,7 +111,6 @@ def generate_response(chain, input_question):
     answer = chain({"query": input_question})
     final_answer = re.sub(r'\s+', ' ', answer['result'])
     return final_answer
-
 
 
 # Display conversation history using Streamlit messages
@@ -189,7 +182,6 @@ def main():
 
         if user_input:
             answer = generate_response(chain, user_input)
-            print(answer)
             st.session_state.past.append(user_input)
             response = answer
             st.session_state.generated.append(response)
